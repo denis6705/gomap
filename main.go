@@ -1,33 +1,37 @@
 package main
 
 import (
-	"flag"
+	"encoding/json"
 	"fmt"
-	"net"
-	"time"
-
-	ping "github.com/digineo/go-ping"
+	"io/ioutil"
+	"os"
 )
 
-var (
-	timeout    = time.Second
-	ping_time  time.Duration
-	attempts   uint = 3
-	host       string
-	remoteAddr *net.IPAddr
-	pinger     *ping.Pinger
-)
+type Nodes struct {
+	Nodes []Node `json:"nodes"`
+}
+
+type Node struct {
+	Name string `json:"name"`
+	IP   string `json:"ip"`
+	X    int    `json:"x"`
+	Y    int    `json:"y"`
+}
 
 func main() {
-	flag.StringVar(&host, "host", host, "usage")
-	flag.Parse()
-	pinger, _ = ping.New("0.0.0.0", "")
-	remoteAddr, _ = net.ResolveIPAddr("ip4", host)
-	if remoteAddr != nil {
-		ping_time, _ = pinger.PingAttempts(remoteAddr, timeout, 3)
-		fmt.Println("host: ", host, " time: ", ping_time)
-	} else {
-		fmt.Println("ipaddress is bad!")
+
+	jsonFile, err := os.Open("nodes.json")
+	if err != nil {
+		fmt.Println(err)
 	}
+	fmt.Println("Successfully Opened nodes.json")
+	defer jsonFile.Close()
+
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+
+	var nodes Nodes
+	json.Unmarshal(byteValue, &nodes)
+
+	fmt.Println(nodes.Nodes[5])
 
 }
